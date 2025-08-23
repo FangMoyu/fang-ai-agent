@@ -1,18 +1,14 @@
 package com.fang.fangaiagent.app;
 
-import com.fang.fangaiagent.advisor.MyLoggerAdvisor;
-import com.fang.fangaiagent.chatmemory.FileBasedChatMemory;
+import com.fang.fangaiagent.chatmemory.DataBasedChatMemory;
+import com.fang.fangaiagent.entity.LoveReport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.MySafeGuardAdvisor;
-import org.springframework.ai.chat.client.advisor.SafeGuardAdvisor;
-import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.stereotype.Component;
-import java.util.List;
 
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY;
@@ -29,17 +25,18 @@ public class LoveApp {
 // 构造函数，传入ChatModel参数
 //使用 Spring 的构造器注入方式来注入阿里大模型 dashscopeChatModel 对象
     public LoveApp(ChatModel dashscopeChatModel) {
-        // 创建ChatMemory对象
-        ChatMemory chatMemory = new InMemoryChatMemory();
+        // 创建ChatMemory
+        DataBasedChatMemory dataBasedChatMemory = new DataBasedChatMemory();
         // 使用ChatClient.builder()方法创建ChatClient对象，并设置默认的系统提示和默认的顾问
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(
-                        new MessageChatMemoryAdvisor(chatMemory),
+                        new MessageChatMemoryAdvisor(dataBasedChatMemory),
                         new MySafeGuardAdvisor(ForbiddenWordsDictionary.getForbiddenWords())
                 )
                 .build();
     }
+
 
 //    public LoveApp(ChatModel dashscopeChatModel) {
 //        // 初始化基于文件的对话记忆
@@ -54,6 +51,12 @@ public class LoveApp {
 //                .build();
 //    }
 
+    /**
+     * 基于文件保存信息的实现方案
+     * @param message
+     * @param chatId
+     * @return
+     */
     public String doChat(String message, String chatId) {
         ChatResponse response = chatClient
                 .prompt()
@@ -73,16 +76,7 @@ public class LoveApp {
         return content;
     }
 
-    /**
-     * record类，用于封装AI返回的标题和推荐内容
-     * @param title
-     * @param suggestions
-     * record 类会自动生成构造器，equals(), hashCode(), toString() 方法,以及各个属性的 getter 方法。
-     * record 类的字段默认加上了 final 关键字，不可变
-     */
-    public record LoveReport(String title, List<String> suggestions) {
 
-    }
 
     public LoveReport doChatWithReport(String message, String chatId) {
         LoveReport loveReport = chatClient.prompt()

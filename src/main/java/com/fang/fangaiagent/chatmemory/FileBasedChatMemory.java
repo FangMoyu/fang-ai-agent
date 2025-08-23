@@ -6,14 +6,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import org.objenesis.strategy.StdInstantiatorStrategy;
-
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
+
+
 public class FileBasedChatMemory implements ChatMemory {
     private final String BASE_DIR;
     private static final Kryo kryo = new Kryo();
@@ -48,9 +48,6 @@ public class FileBasedChatMemory implements ChatMemory {
         conversationMessages.addAll(messages);
         saveConversation(conversationId, conversationMessages);
     }
-
-
-
 
     /**
      * 获取指定会话ID的对话历史记录
@@ -99,6 +96,7 @@ public class FileBasedChatMemory implements ChatMemory {
      * @param lastN
      * @return
      */
+    @Override
     public List<Message> get(String conversationId, int lastN) {
         List<Message> allMessages = getOrCreateConversation(conversationId);
         return allMessages.stream()

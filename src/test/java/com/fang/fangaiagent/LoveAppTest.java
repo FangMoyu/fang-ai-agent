@@ -2,6 +2,7 @@ package com.fang.fangaiagent;
 
 import cn.hutool.core.lang.UUID;
 import com.fang.fangaiagent.app.LoveApp;
+import com.fang.fangaiagent.entity.LoveReport;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ class LoveAppTest {
     void doChatWithReport() {
         String chatId = UUID.randomUUID().toString();
         String message = "你好，我是小方, 我想让另一半(纳西妲)更爱我，但我不知道该怎么做";
-        LoveApp.LoveReport loveReport = loveApp.doChatWithReport(message, chatId);
+        LoveReport loveReport = loveApp.doChatWithReport(message, chatId);
         Assertions.assertNotNull(loveReport);
     }
 }
