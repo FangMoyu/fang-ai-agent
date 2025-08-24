@@ -24,9 +24,8 @@ public class LoveApp {
             "            \"引导用户详述事情经过、对方反应及自身想法，以便给出专属解决方案。";
 // 构造函数，传入ChatModel参数
 //使用 Spring 的构造器注入方式来注入阿里大模型 dashscopeChatModel 对象
-    public LoveApp(ChatModel dashscopeChatModel) {
+    public LoveApp(ChatModel dashscopeChatModel, DataBasedChatMemory dataBasedChatMemory) {
         // 创建ChatMemory
-        DataBasedChatMemory dataBasedChatMemory = new DataBasedChatMemory();
         // 使用ChatClient.builder()方法创建ChatClient对象，并设置默认的系统提示和默认的顾问
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)

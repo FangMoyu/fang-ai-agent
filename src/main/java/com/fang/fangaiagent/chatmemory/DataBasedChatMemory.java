@@ -1,40 +1,28 @@
 package com.fang.fangaiagent.chatmemory;
-import cn.hutool.core.util.ObjUtil;
-import com.alibaba.dashscope.aigc.conversation.Conversation;
-import com.baomidou.mybatisplus.core.MybatisSqlSessionFactoryBuilder;
 import com.fang.fangaiagent.entity.conversation;
 import com.fang.fangaiagent.gsonAdapter.MessageTypeAdapter;
 import com.fang.fangaiagent.mapper.conversationMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+import jakarta.annotation.Resource;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
-import java.io.IOException;
-import java.io.InputStream;
+import org.springframework.stereotype.Component;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Component
 public class DataBasedChatMemory implements ChatMemory {
-    private static SqlSessionFactory sqlSessionFactory;
+
+    @Resource
+    private conversationMapper conversationMapper;
+
     Gson gson = new GsonBuilder()
             .registerTypeAdapter(Message.class, new MessageTypeAdapter())
             .create();
-    static {
-        try {
-            // 加载 mybatis-config.xml
-            InputStream inputStream = Resources.getResourceAsStream("mybatis-config.xml");
-            // 使用 MyBatis-Plus 的 builder（支持 MP 的插件和自动填充等功能）
-            sqlSessionFactory = new MybatisSqlSessionFactoryBuilder().build(inputStream);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to initialize SqlSessionFactory", e);
-        }
-    }
+
 
     public DataBasedChatMemory() {
 
@@ -60,20 +48,12 @@ public class DataBasedChatMemory implements ChatMemory {
         oldConversation.setMessage(newMessagesJsonStr);
 
         // 5. 将 JSON 字符串更新到数据库中
-        try (SqlSession session = sqlSessionFactory.openSession()) {
-            // 获取 Mapper 代理对象
-            conversationMapper conversationMapper = session.getMapper(conversationMapper.class);
-            conversationMapper.updateById(oldConversation);
-            session.commit();
-        }
+        conversationMapper.updateById(oldConversation);
     }
 
 
     public conversation getOrCreateConversationData(String conversationId) {
         conversation conversation;
-        try (SqlSession session = sqlSessionFactory.openSession()) {
-            // 获取 Mapper 代理对象
-            conversationMapper conversationMapper = session.getMapper(conversationMapper.class);
             // 1. 获取到数据库中的 messages JSON 字符串
             conversation = conversationMapper.selectById(conversationId);
             if (conversation == null) {
@@ -83,8 +63,6 @@ public class DataBasedChatMemory implements ChatMemory {
                 conversation.setMessage(gson.toJson(messages));
                 conversationMapper.insert(conversation);
             }
-            session.commit();
-        }
         return conversation;
     }
     @Override
@@ -104,12 +82,7 @@ public class DataBasedChatMemory implements ChatMemory {
 
     @Override
     public void clear(String conversationId) {
-        try (SqlSession session = sqlSessionFactory.openSession()) {
-            // 获取 Mapper 代理对象
-            conversationMapper conversationMapper = session.getMapper(conversationMapper.class);
             // 1. 获取到数据库中的 messages JSON 字符串
             conversationMapper.deleteById(conversationId);
-            session.commit();
-        }
     }
 }
