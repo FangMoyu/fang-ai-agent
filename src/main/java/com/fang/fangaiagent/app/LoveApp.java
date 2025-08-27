@@ -1,13 +1,18 @@
 package com.fang.fangaiagent.app;
 
+import com.fang.fangaiagent.advisor.MyLoggerAdvisor;
+import com.fang.fangaiagent.advisor.MySafeGuardAdvisor;
 import com.fang.fangaiagent.chatmemory.DataBasedChatMemory;
 import com.fang.fangaiagent.entity.LoveReport;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.MySafeGuardAdvisor;
+import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
 
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
@@ -25,7 +30,6 @@ public class LoveApp {
 // 构造函数，传入ChatModel参数
 //使用 Spring 的构造器注入方式来注入阿里大模型 dashscopeChatModel 对象
     public LoveApp(ChatModel dashscopeChatModel, DataBasedChatMemory dataBasedChatMemory) {
-        // 创建ChatMemory
         // 使用ChatClient.builder()方法创建ChatClient对象，并设置默认的系统提示和默认的顾问
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
@@ -75,7 +79,47 @@ public class LoveApp {
         return content;
     }
 
+    @Resource
+    private VectorStore loveAppVectorStore;
 
+
+    @Resource
+    private Advisor loveAppRagCloudAdvisor;
+
+    /**
+     * 使用 RAG 进行问答
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public String doChatWithRag(String message, String chatId) {
+        return ChatByRagCloud(message, chatId, loveAppRagCloudAdvisor);
+    }
+
+    @Resource
+    private Advisor lovePartnerRagCloudAdvisor;
+
+    private final String PARTNER_SYSTEM_PROMPT = "你必须恋爱对象列表中选出至少一位最适合用户情况的对象,不允许出现没有推荐任何人的情况";
+
+    public String doChatWithPartnerRag(String message, String chatId) {
+        message = message + PARTNER_SYSTEM_PROMPT;
+        return ChatByRagCloud(message, chatId, lovePartnerRagCloudAdvisor);
+    }
+
+    private String ChatByRagCloud(String message, String chatId, Advisor... advisors) {
+        ChatResponse chatResponse = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)) // 设置上下文记忆条数
+                .advisors(new MyLoggerAdvisor())
+                .advisors(advisors)
+                .call()
+                .chatResponse();
+        String context = chatResponse.getResult().getOutput().getText();
+        log.info("context: {}", context);
+        return context;
+    }
 
     public LoveReport doChatWithReport(String message, String chatId) {
         LoveReport loveReport = chatClient.prompt()

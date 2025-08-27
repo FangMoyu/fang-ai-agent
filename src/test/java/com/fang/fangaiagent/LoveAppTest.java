@@ -38,4 +38,30 @@ class LoveAppTest {
         LoveReport loveReport = loveApp.doChatWithReport(message, chatId);
         Assertions.assertNotNull(loveReport);
     }
+
+    @Test
+    void doChatWithRag() {
+        String chatId = UUID.randomUUID().toString();
+        String message = "你好，我是小方, 我想让另一半(纳西妲)更爱我，我们结婚多年了，但我不知道该怎么做";
+        String context = loveApp.doChatWithRag(message, chatId);
+        Assertions.assertNotNull(context);
+    }
+
+    @Test
+    void doChatWithPartnerRag() {
+        String chatId = UUID.randomUUID().toString();
+        String message = "我是一个安静但内心丰富的人。\n" +
+                "\n" +
+                "白天在出版社校对文字，晚上画画、写日记、泡一杯花茶听老歌。\n" +
+                "\n" +
+                "不太喜欢喧闹的聚会，但很享受和一个人散步、看晚霞、聊心事的时光。\n" +
+                "\n" +
+                "我相信温柔的力量，也正在学习如何更好地表达爱与需求。\n" +
+                "\n" +
+                "我喜欢雨天，喜欢旧书店的气味，喜欢深夜的厨房灯光。\n" +
+                "\n" +
+                "理想的生活，是和一个能彼此倾听、共同成长的人，过简单而有温度的日子。请你为我找一个最适合的对象";
+        String context = loveApp.doChatWithPartnerRag(message, chatId);
+        Assertions.assertNotNull(context);
+    }
 }
