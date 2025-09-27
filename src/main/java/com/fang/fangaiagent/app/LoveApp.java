@@ -34,7 +34,7 @@ public class LoveApp {
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(
-                        new MessageChatMemoryAdvisor(dataBasedChatMemory),
+                        MessageChatMemoryAdvisor.builder(dataBasedChatMemory).build(),
                         new MySafeGuardAdvisor(ForbiddenWordsDictionary.getForbiddenWords())
                 )
                 .build();

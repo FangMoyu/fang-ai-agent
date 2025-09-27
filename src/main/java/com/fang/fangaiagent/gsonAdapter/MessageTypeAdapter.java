@@ -9,10 +9,20 @@ public class MessageTypeAdapter implements JsonSerializer<Message>, JsonDeserial
     
     private static final String TYPE_FIELD = "messageType";
     
+/**
+ * 重写序列化方法，将Message对象序列化为JsonElement
+ * @param message 要序列化的Message对象
+ * @param type 序列化目标类型
+ * @param context JSON序列化上下文
+ * @return 包含类型信息的JsonElement对象
+ */
     @Override
     public JsonElement serialize(Message message, Type type, JsonSerializationContext context) {
+    // 使用上下文序列化Message对象，获取其JsonElement表示
         JsonElement jsonElement = context.serialize(message, message.getClass());
+    // 在Json对象中添加类型字段，值为Message类的简单名称
         jsonElement.getAsJsonObject().addProperty(TYPE_FIELD, message.getClass().getSimpleName());
+    // 返回添加了类型信息的JsonElement
         return jsonElement;
     }
     

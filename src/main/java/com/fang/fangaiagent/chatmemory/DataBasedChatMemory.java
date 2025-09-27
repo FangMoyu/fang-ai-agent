@@ -1,4 +1,5 @@
 package com.fang.fangaiagent.chatmemory;
+import com.baomidou.dynamic.datasource.annotation.DS;
 import com.fang.fangaiagent.entity.conversation;
 import com.fang.fangaiagent.gsonAdapter.MessageTypeAdapter;
 import com.fang.fangaiagent.mapper.conversationMapper;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@DS("mysql")
 public class DataBasedChatMemory implements ChatMemory {
 
     @Resource
@@ -46,7 +48,6 @@ public class DataBasedChatMemory implements ChatMemory {
         // 4. 将 List<Message> 对象转为 JSON 字符串
         String newMessagesJsonStr = gson.toJson(oldMessages);
         oldConversation.setMessage(newMessagesJsonStr);
-
         // 5. 将 JSON 字符串更新到数据库中
         conversationMapper.updateById(oldConversation);
     }

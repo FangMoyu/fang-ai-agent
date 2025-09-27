@@ -19,7 +19,7 @@ public class LoveAppRagCloudAdvisorConfig {
 
     @Bean
     public Advisor loveAppRagCloudAdvisor() {
-        var dashScopeApi = new DashScopeApi(dashscopeApiKey);
+        DashScopeApi dashScopeApi = new DashScopeApi(dashscopeApiKey);
         DashScopeDocumentRetriever documentRetriever = new DashScopeDocumentRetriever(dashScopeApi,
                 DashScopeDocumentRetrieverOptions.builder()
                         .withIndexName("恋爱大师").build());
@@ -29,7 +29,7 @@ public class LoveAppRagCloudAdvisorConfig {
 
     @Bean
     public Advisor lovePartnerRagCloudAdvisor() {
-        var dashScopeApi = new DashScopeApi(dashscopeApiKey);
+        DashScopeApi dashScopeApi = new DashScopeApi(dashscopeApiKey);
         DashScopeDocumentRetriever documentRetriever = new DashScopeDocumentRetriever(dashScopeApi,
                 DashScopeDocumentRetrieverOptions.builder()
                         .withIndexName("恋爱对象").build());
