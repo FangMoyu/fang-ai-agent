@@ -1,9 +1,12 @@
 package com.fang.fangaiagent.app;
 
+import com.fang.fangaiagent.advisor.LoveAppRagCustomAdvisorFactory;
 import com.fang.fangaiagent.advisor.MyLoggerAdvisor;
 import com.fang.fangaiagent.advisor.MySafeGuardAdvisor;
 import com.fang.fangaiagent.chatmemory.DataBasedChatMemory;
 import com.fang.fangaiagent.entity.LoveReport;
+import com.fang.fangaiagent.rag.QueryRewriter;
+import com.fang.fangaiagent.transapi.TransApi;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -61,6 +64,7 @@ public class LoveApp {
      * @return
      */
     public String doChat(String message, String chatId) {
+
         ChatResponse response = chatClient
                 .prompt()
                 .user(message)
@@ -86,15 +90,23 @@ public class LoveApp {
     @Resource
     private Advisor loveAppRagCloudAdvisor;
 
+    @Resource
+    private QueryRewriter queryRewriter;
     /**
      * 使用 RAG 进行问答
      * @param message
      * @param chatId
      * @return
      */
-    public String doChatWithRag(String message, String chatId) {
+    public String doChatWithRagCloud(String message, String chatId) {
+        message = TransUserText2Chinese(message);
         return ChatByRagCloud(message, chatId, loveAppRagCloudAdvisor);
     }
+
+    public String doChatWithRag(String message, String chatId) {
+        return ChatByRag(message, chatId);
+    }
+
 
     @Resource
     private Advisor lovePartnerRagCloudAdvisor;
@@ -103,10 +115,12 @@ public class LoveApp {
 
     public String doChatWithPartnerRag(String message, String chatId) {
         message = message + PARTNER_SYSTEM_PROMPT;
+        message = TransUserText2Chinese(message);
         return ChatByRagCloud(message, chatId, lovePartnerRagCloudAdvisor);
     }
 
     private String ChatByRagCloud(String message, String chatId, Advisor... advisors) {
+        String rewrittenMessage = queryRewriter.doQueryRewrite(message);
         ChatResponse chatResponse = chatClient
                 .prompt()
                 .user(message)
@@ -121,7 +135,26 @@ public class LoveApp {
         return context;
     }
 
+    private String ChatByRag(String message, String chatId, Advisor... advisors) {
+        message = TransUserText2Chinese(message);
+        ChatResponse chatResponse = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)) // 设置上下文记忆条数
+                .advisors(new MyLoggerAdvisor())
+                .advisors(advisors)
+                //.advisors(LoveAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(loveAppVectorStore, "已婚"))
+                .advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
+                .call()
+                .chatResponse();
+        String context = chatResponse.getResult().getOutput().getText();
+        log.info("context: {}", context);
+        return context;
+    }
+
     public LoveReport doChatWithReport(String message, String chatId) {
+        message = TransUserText2Chinese(message);
         LoveReport loveReport = chatClient.prompt()
                 .system(SYSTEM_PROMPT + "每次对话后都要生成恋爱结果，标题为{用户名}的恋爱报告，内容为建议列表")
                 .user(message)
@@ -131,5 +164,11 @@ public class LoveApp {
                 .entity(LoveReport.class);
         log.info("loveReport: {}", loveReport);
         return loveReport;
+    }
+
+    @Resource
+    private TransApi transApi;
+    private String TransUserText2Chinese(String message) {
+        return transApi.getTransResult(message, "auto", "zh");
     }
 }

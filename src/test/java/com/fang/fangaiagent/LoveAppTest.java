@@ -48,6 +48,14 @@ class LoveAppTest {
     }
 
     @Test
+    void doChatWithRagCloud() {
+        String chatId = UUID.randomUUID().toString();
+        String message = "Hello, I'm Xiao Fang. I have been in love with and married to Nahida for a long time. How can I maintain our relationship?";
+        String context = loveApp.doChatWithRagCloud(message, chatId);
+        Assertions.assertNotNull(context);
+    }
+
+    @Test
     void doChatWithPartnerRag() {
         String chatId = UUID.randomUUID().toString();
         String message = "我是一个安静但内心丰富的人。\n" +

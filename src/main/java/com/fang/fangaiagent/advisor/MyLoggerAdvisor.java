@@ -19,6 +19,7 @@ public class MyLoggerAdvisor implements CallAroundAdvisor, StreamAroundAdvisor {
 
     private AdvisedRequest before(AdvisedRequest request) {
         log.info("AI request: {}", request.userText());
+
         return request;
     }
 

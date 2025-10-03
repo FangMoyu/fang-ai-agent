@@ -3,6 +3,7 @@ package com.fang.fangaiagent.rag;
 import com.alibaba.cloud.ai.dashscope.api.DashScopeApi;
 import com.alibaba.cloud.ai.dashscope.rag.DashScopeDocumentRetriever;
 import com.alibaba.cloud.ai.dashscope.rag.DashScopeDocumentRetrieverOptions;
+import com.fang.fangaiagent.factory.LoveAppContextualQueryAugmenterFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.advisor.RetrievalAugmentationAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
@@ -24,7 +25,10 @@ public class LoveAppRagCloudAdvisorConfig {
                 DashScopeDocumentRetrieverOptions.builder()
                         .withIndexName("恋爱大师").build());
         return RetrievalAugmentationAdvisor.builder()
-                .documentRetriever(documentRetriever).build();
+                .documentRetriever(documentRetriever)
+                // 不允许空的输入，若为空，则会提供默认 userText
+                .queryAugmenter(LoveAppContextualQueryAugmenterFactory.createInstance())
+                .build();
     }
 
     @Bean

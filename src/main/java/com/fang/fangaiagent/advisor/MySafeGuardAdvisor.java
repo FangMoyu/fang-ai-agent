@@ -17,11 +17,7 @@ import org.springframework.ai.chat.model.Generation;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
-/**
- * A {@link CallAroundAdvisor} and {@link StreamAroundAdvisor} that filters out the
- * response if the user input contains any of the sensitive words.
- * If the user input contains any of the sensitive words, the response is replaced with a failure response.
- */
+
 public class MySafeGuardAdvisor implements CallAroundAdvisor, StreamAroundAdvisor {
 
     private final static String DEFAULT_FAILURE_RESPONSE = "抱歉，您的提问中包含了敏感词汇，请您对您的内容进行修改后再尝试发送";
