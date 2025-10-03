@@ -22,7 +22,7 @@ class LoveAppTest {
         String answer = loveApp.doChat(message, chatId);
         Assertions.assertNotNull(answer);
         // 第二轮
-        message = "我想让另一半（编程导航）更爱我";
+        message = "我想让另一半（小黄）更爱我";
         answer = loveApp.doChat(message, chatId);
         Assertions.assertNotNull(answer);
         // 第三轮
@@ -50,7 +50,7 @@ class LoveAppTest {
     @Test
     void doChatWithRagCloud() {
         String chatId = UUID.randomUUID().toString();
-        String message = "Hello, I'm Xiao Fang. I have been in love with and married to Nahida for a long time. How can I maintain our relationship?";
+        String message = "你好，我是小方, 我想让另一半(纳西妲)更爱我，我们结婚多年了，但我不知道该怎么做?";
         String context = loveApp.doChatWithRagCloud(message, chatId);
         Assertions.assertNotNull(context);
     }

@@ -49,6 +49,10 @@ public class FileBasedChatMemory implements ChatMemory {
         saveConversation(conversationId, conversationMessages);
     }
 
+    public List<Message> get(String conversationId) {
+        return getOrCreateConversation(conversationId);
+    }
+
     /**
      * 获取指定会话ID的对话历史记录
      * @param conversationId
@@ -96,7 +100,6 @@ public class FileBasedChatMemory implements ChatMemory {
      * @param lastN
      * @return
      */
-    @Override
     public List<Message> get(String conversationId, int lastN) {
         List<Message> allMessages = getOrCreateConversation(conversationId);
         return allMessages.stream()

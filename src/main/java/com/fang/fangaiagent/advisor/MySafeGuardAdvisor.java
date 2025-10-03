@@ -1,16 +1,16 @@
 package com.fang.fangaiagent.advisor;
 
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.ai.chat.client.ChatClientRequest;
+import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.SafeGuardAdvisor;
+import org.springframework.ai.chat.client.advisor.api.CallAdvisor;
+import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain;
+import org.springframework.ai.chat.client.advisor.api.StreamAdvisor;
+import org.springframework.ai.chat.client.advisor.api.StreamAdvisorChain;
 import reactor.core.publisher.Flux;
-
-import org.springframework.ai.chat.client.advisor.api.AdvisedRequest;
-import org.springframework.ai.chat.client.advisor.api.AdvisedResponse;
-import org.springframework.ai.chat.client.advisor.api.CallAroundAdvisor;
-import org.springframework.ai.chat.client.advisor.api.CallAroundAdvisorChain;
-import org.springframework.ai.chat.client.advisor.api.StreamAroundAdvisor;
-import org.springframework.ai.chat.client.advisor.api.StreamAroundAdvisorChain;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
@@ -18,7 +18,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 
-public class MySafeGuardAdvisor implements CallAroundAdvisor, StreamAroundAdvisor {
+public class MySafeGuardAdvisor implements CallAdvisor, StreamAdvisor {
 
     private final static String DEFAULT_FAILURE_RESPONSE = "抱歉，您的提问中包含了敏感词汇，请您对您的内容进行修改后再尝试发送";
 
@@ -66,36 +66,25 @@ public class MySafeGuardAdvisor implements CallAroundAdvisor, StreamAroundAdviso
                 && this.sensitiveWords.stream().anyMatch(text::contains);
     }
 
-    @Override
-    public AdvisedResponse aroundCall(AdvisedRequest advisedRequest, CallAroundAdvisorChain chain) {
-        if (check(advisedRequest.userText())) {
-            return createFailureResponse(advisedRequest);
-        }
-        AdvisedResponse advisedResponse = chain.nextAroundCall(advisedRequest);
-        if (advisedResponse.response() == null || check(advisedResponse.response().getResult().getOutput().getText())) {
-            return createFailureResponse(advisedRequest);
-        }
-        return advisedResponse;
-    }
-
-    @Override
-    public Flux<AdvisedResponse> aroundStream(AdvisedRequest advisedRequest, StreamAroundAdvisorChain chain) {
-        if (check(advisedRequest.userText())) {
-            return Flux.just(createFailureResponse(advisedRequest));
-        }
-        return chain.nextAroundStream(advisedRequest);
-    }
-
-    private AdvisedResponse createFailureResponse(AdvisedRequest advisedRequest) {
-        return new AdvisedResponse(ChatResponse.builder()
-                .generations(List.of(new Generation(new AssistantMessage(this.failureResponse))))
-                .build(), advisedRequest.adviseContext());
-    }
 
 
     @Override
     public int getOrder() {
         return this.order;
+    }
+
+    @Override
+    public ChatClientResponse adviseCall(ChatClientRequest chatClientRequest, CallAdvisorChain callAdvisorChain) {
+        return !CollectionUtils.isEmpty(this.sensitiveWords) && this.sensitiveWords.stream().anyMatch((w) -> chatClientRequest.prompt().getContents().contains(w)) ? this.createFailureResponse(chatClientRequest) : callAdvisorChain.nextCall(chatClientRequest);
+    }
+
+    @Override
+    public Flux<ChatClientResponse> adviseStream(ChatClientRequest chatClientRequest, StreamAdvisorChain streamAdvisorChain) {
+        return !CollectionUtils.isEmpty(this.sensitiveWords) && this.sensitiveWords.stream().anyMatch((w) -> chatClientRequest.prompt().getContents().contains(w)) ? Flux.just(this.createFailureResponse(chatClientRequest)) : streamAdvisorChain.nextStream(chatClientRequest);
+    }
+
+    private ChatClientResponse createFailureResponse(ChatClientRequest chatClientRequest) {
+        return ChatClientResponse.builder().chatResponse(ChatResponse.builder().generations(List.of(new Generation(new AssistantMessage(this.failureResponse)))).build()).context(Map.copyOf(chatClientRequest.context())).build();
     }
 
     public static final class Builder {

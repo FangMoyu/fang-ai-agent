@@ -1,6 +1,4 @@
 package com.fang.fangaiagent.app;
-
-import com.fang.fangaiagent.advisor.LoveAppRagCustomAdvisorFactory;
 import com.fang.fangaiagent.advisor.MyLoggerAdvisor;
 import com.fang.fangaiagent.advisor.MySafeGuardAdvisor;
 import com.fang.fangaiagent.chatmemory.DataBasedChatMemory;
@@ -11,16 +9,13 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
-
-import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
-import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY;
-
 @Component
 @Slf4j
 public class LoveApp {
@@ -30,7 +25,10 @@ public class LoveApp {
             "            \"围绕单身、恋爱、已婚三种状态提问：单身状态询问社交圈拓展及追求心仪对象的困扰；\" +\n" +
             "            \"恋爱状态询问沟通、习惯差异引发的矛盾；已婚状态询问家庭责任与亲属关系处理的问题。\" +\n" +
             "            \"引导用户详述事情经过、对方反应及自身想法，以便给出专属解决方案。";
-// 构造函数，传入ChatModel参数
+
+
+
+    // 构造函数，传入ChatModel参数
 //使用 Spring 的构造器注入方式来注入阿里大模型 dashscopeChatModel 对象
     public LoveApp(ChatModel dashscopeChatModel, DataBasedChatMemory dataBasedChatMemory) {
         // 使用ChatClient.builder()方法创建ChatClient对象，并设置默认的系统提示和默认的顾问
@@ -64,13 +62,11 @@ public class LoveApp {
      * @return
      */
     public String doChat(String message, String chatId) {
-
         ChatResponse response = chatClient
                 .prompt()
                 .user(message)
                 // 设置对话的 id，只有相同 id 的情况下AI才会记忆上下文
-                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
-                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)) // 设置上下文记忆条数
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .call()
                 .chatResponse();
         String content;
@@ -124,8 +120,7 @@ public class LoveApp {
         ChatResponse chatResponse = chatClient
                 .prompt()
                 .user(message)
-                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
-                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)) // 设置上下文记忆条数
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .advisors(new MyLoggerAdvisor())
                 .advisors(advisors)
                 .call()
@@ -140,8 +135,7 @@ public class LoveApp {
         ChatResponse chatResponse = chatClient
                 .prompt()
                 .user(message)
-                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
-                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)) // 设置上下文记忆条数
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))// 设置上下文记忆条数
                 .advisors(new MyLoggerAdvisor())
                 .advisors(advisors)
                 //.advisors(LoveAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(loveAppVectorStore, "已婚"))
@@ -158,8 +152,7 @@ public class LoveApp {
         LoveReport loveReport = chatClient.prompt()
                 .system(SYSTEM_PROMPT + "每次对话后都要生成恋爱结果，标题为{用户名}的恋爱报告，内容为建议列表")
                 .user(message)
-                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
-                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)) // 设置上下文记忆条数
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .call()
                 .entity(LoveReport.class);
         log.info("loveReport: {}", loveReport);

@@ -1,4 +1,5 @@
 package com.fang.fangaiagent.chatmemory;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.fang.fangaiagent.entity.conversation;
 import com.fang.fangaiagent.gsonAdapter.MessageTypeAdapter;
@@ -53,6 +54,11 @@ public class DataBasedChatMemory implements ChatMemory {
     }
 
 
+    public List<Message> get(String conversationId) {
+        return get(conversationId, -1);
+    }
+
+
     public conversation getOrCreateConversationData(String conversationId) {
         conversation conversation;
             // 1. 获取到数据库中的 messages JSON 字符串
@@ -66,7 +72,7 @@ public class DataBasedChatMemory implements ChatMemory {
             }
         return conversation;
     }
-    @Override
+
     public List<Message> get(String conversationId, int lastN) {
         conversation conversation = getOrCreateConversationData(conversationId);
         String messagesJson = conversation.getMessage();
