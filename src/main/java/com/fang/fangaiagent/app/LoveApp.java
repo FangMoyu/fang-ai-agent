@@ -4,6 +4,8 @@ import com.fang.fangaiagent.advisor.MySafeGuardAdvisor;
 import com.fang.fangaiagent.chatmemory.DataBasedChatMemory;
 import com.fang.fangaiagent.entity.LoveReport;
 import com.fang.fangaiagent.rag.QueryRewriter;
+import com.fang.fangaiagent.tools.WebScrapingTool;
+import com.fang.fangaiagent.tools.WebSearchTool;
 import com.fang.fangaiagent.transapi.TransApi;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +16,12 @@ import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvi
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+
 @Component
 @Slf4j
 public class LoveApp {
@@ -164,4 +170,31 @@ public class LoveApp {
     private String TransUserText2Chinese(String message) {
         return transApi.getTransResult(message, "auto", "zh");
     }
+
+    /**
+     * 工具集成数组
+     */
+    @Resource
+    private ToolCallback[] allTools;
+    /**
+     * 工具调用
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public String doChatWithTools(String message, String chatId) {
+        ChatResponse response = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                // 开启日志，便于观察效果
+                .advisors(new MyLoggerAdvisor())
+                .toolCallbacks(allTools)
+                .call()
+                .chatResponse();
+        String content = response.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
+
 }

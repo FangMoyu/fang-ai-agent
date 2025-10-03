@@ -1,12 +1,13 @@
 package com.fang.fangaiagent.tools;
-
-
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IORuntimeException;
 import com.fang.fangaiagent.constant.FileConstant;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 
+/**
+ * 文件操作工具
+ */
 public class FileOperationTool {
     private final String FILE_DIR = FileConstant.FILE_SAVE_DIR + "/file";
 
