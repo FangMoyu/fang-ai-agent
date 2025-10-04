@@ -1,5 +1,6 @@
-package com.fang.fangaiagent.tools;
+package com.fang.fangaiagent.tools.registration;
 
+import com.fang.fangaiagent.tools.*;
 import org.springframework.ai.support.ToolCallbacks;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,13 +21,17 @@ public class ToolRegistration {
         ResourceDownloadTool resourceDownloadTool = new ResourceDownloadTool();
         TerminalOperationTool terminalOperationTool = new TerminalOperationTool();
         PDFGenerationTool pdfGenerationTool = new PDFGenerationTool();
+        TimeOperationTool timeOperationTool = new TimeOperationTool();
+        QQEmailSenderTool qqEmailSenderTool = new QQEmailSenderTool();
         return ToolCallbacks.from(
             fileOperationTool,
             webSearchTool,
             webScrapingTool,
             resourceDownloadTool,
             terminalOperationTool,
-            pdfGenerationTool
+            pdfGenerationTool,
+            timeOperationTool,
+            qqEmailSenderTool
         );
     }
 }
