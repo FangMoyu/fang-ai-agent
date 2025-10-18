@@ -1,6 +1,6 @@
 package com.fang.fangaiagent.rag;
 
-import jakarta.annotation.Resource;
+
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.rag.Query;

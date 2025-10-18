@@ -79,10 +79,10 @@ class LoveAppTest {
 
         // 测试网页抓取：恋爱案例分析
         //testMessage("最近和对象吵架了，看看编程导航网站（codefather.cn）的其他情侣是怎么解决矛盾的？");
-        testMessage("帮我向fang@jmu.edu.cn发送一份邮件，邮件的内容是：你好鸭，可以和你一起学习Java吗？");
-        testMessage("请告诉我当前的时间，且格式必须是 yyyy-mm-dd 的形式");
+//        testMessage("帮我向fang@jmu.edu.cn发送一份邮件，邮件的内容是：你好鸭，可以和你一起学习Java吗？");
+//        testMessage("请告诉我当前的时间，且格式必须是 yyyy-mm-dd 的形式");
         // 测试资源下载：图片下载
-       // testMessage("直接下载一张适合做手机壁纸的星空情侣图片为文件");
+        testMessage("直接下载一张适合做手机壁纸的星空情侣图片为文件");
 
         // 测试终端操作：执行代码
         //testMessage("请利用终端CMD执行ping www.baidu.com，并向我展示结果");

@@ -23,6 +23,7 @@ public class ToolRegistration {
         PDFGenerationTool pdfGenerationTool = new PDFGenerationTool();
         TimeOperationTool timeOperationTool = new TimeOperationTool();
         QQEmailSenderTool qqEmailSenderTool = new QQEmailSenderTool();
+        TerminateTool terminateTool = new TerminateTool();
         return ToolCallbacks.from(
             fileOperationTool,
             webSearchTool,
@@ -31,7 +32,8 @@ public class ToolRegistration {
             terminalOperationTool,
             pdfGenerationTool,
             timeOperationTool,
-            qqEmailSenderTool
+            qqEmailSenderTool,
+            terminateTool
         );
     }
 }
