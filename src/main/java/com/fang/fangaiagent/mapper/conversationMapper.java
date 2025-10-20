@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
  * @Entity com.fang.fangaiagent.entity.conversation
  */
 @Mapper
-public interface conversationMapper extends BaseMapper<conversation> {
+public interface  conversationMapper extends BaseMapper<conversation> {
 
 }
 

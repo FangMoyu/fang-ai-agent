@@ -27,6 +27,7 @@ public class LoveAppDocumentLoader {
             Resource[] resources = resourcePatternResolver.getResources("classpath:document/*.md");
             for(Resource resource : resources) {
                 String fileName = resource.getFilename();
+                // 将文件名中的状态部分添加到元数据
                 String status = fileName.substring(fileName.length() - 6, fileName.length() - 4);
                 MarkdownDocumentReaderConfig config = MarkdownDocumentReaderConfig.builder()
                         .withHorizontalRuleCreateDocument(true)

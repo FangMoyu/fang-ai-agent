@@ -2,7 +2,12 @@ package com.fang.fangaiagent.controller;
 
 import com.fang.fangaiagent.agent.FangManus;
 import com.fang.fangaiagent.app.LoveApp;
+import com.fang.fangaiagent.common.BaseResponse;
+import com.fang.fangaiagent.common.ResultUtils;
+import com.fang.fangaiagent.constant.UserConstant;
+import com.fang.fangaiagent.service.UserService;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
+import javax.xml.transform.Result;
 import java.io.IOException;
 
 @RestController
@@ -29,12 +35,18 @@ public class AiController {
 
     @Resource
     private ChatModel dashScopeChatModel;
+
     @Autowired
     private ChatModel chatModel;
 
+    @Resource
+    private UserService userService;
+
     @GetMapping("/love_app/chat/sync")
-    public String doChatWithLoveAppSync(String message, String chatId) {
-        return loveApp.doChat(message, chatId);
+    public BaseResponse<String> doChatWithLoveAppSync(String message, String chatId, HttpServletRequest request) {
+        userService.getLoginUser(request);
+        String result = loveApp.doChat(message, chatId);
+        return ResultUtils.success(result);
     }
 
     /**
@@ -44,7 +56,8 @@ public class AiController {
      * @return
      */
     @GetMapping(value = "/love_app/chat/sse", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> doChatWithLoveAppSSE(String message, String chatId) {
+    public Flux<String> doChatWithLoveAppSSE(String message, String chatId, HttpServletRequest request) {
+        userService.getLoginUser(request);
         return loveApp.doChatByStream(message, chatId);
     }
 
@@ -62,7 +75,8 @@ public class AiController {
 //    }
 
     @GetMapping("/love_app/chat/sse/emitter")
-    public SseEmitter doChatWithLoveAppSseEmitter(String message, String chatId) {
+    public SseEmitter doChatWithLoveAppSseEmitter(String message, String chatId, HttpServletRequest request) {
+        userService.getLoginUser(request);
         // 创建一个超时时间较长的 SseEmitter
         SseEmitter emitter = new SseEmitter(180000L); // 3分钟超时
         // 获取 Flux 数据流并直接订阅
@@ -86,7 +100,8 @@ public class AiController {
     }
 
     @GetMapping("/manus/chat")
-    public SseEmitter doChatWithManus(String message) {
+    public SseEmitter doChatWithManus(String message, HttpServletRequest request) {
+        userService.getLoginUser(request);
         FangManus fangManus = new FangManus(allTools, dashScopeChatModel);
         return fangManus.runStream(message);
     }

@@ -64,7 +64,7 @@ public class LoveApp {
 //    }
 
     /**
-     * 基于文件保存信息的实现方案
+     * 聊天
      * @param message
      * @param chatId
      * @return
@@ -123,8 +123,16 @@ public class LoveApp {
         return ChatByRagCloud(message, chatId, lovePartnerRagCloudAdvisor);
     }
 
+    /**
+     * 云知识库对话
+     * @param message
+     * @param chatId
+     * @param advisors
+     * @return
+     */
     private String ChatByRagCloud(String message, String chatId, Advisor... advisors) {
-        String rewrittenMessage = queryRewriter.doQueryRewrite(message);
+        // 对用户输入进行重写
+        // String rewrittenMessage = queryRewriter.doQueryRewrite(message);
         ChatResponse chatResponse = chatClient
                 .prompt()
                 .user(message)
@@ -138,6 +146,13 @@ public class LoveApp {
         return context;
     }
 
+    /**
+     * 本地知识库对话
+     * @param message
+     * @param chatId
+     * @param advisors
+     * @return
+     */
     private String ChatByRag(String message, String chatId, Advisor... advisors) {
         message = TransUserText2Chinese(message);
         ChatResponse chatResponse = chatClient
@@ -155,6 +170,12 @@ public class LoveApp {
         return context;
     }
 
+    /**
+     * 报告
+     * @param message
+     * @param chatId
+     * @return
+     */
     public LoveReport doChatWithReport(String message, String chatId) {
         message = TransUserText2Chinese(message);
         LoveReport loveReport = chatClient.prompt()
